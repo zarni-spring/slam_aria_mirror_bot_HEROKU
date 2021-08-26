@@ -36,7 +36,7 @@ class MyLogger:
 class YoutubeDLHelper(DownloadHelper):
     def __init__(self, listener):
         super().__init__()
-        self.__name = ""
+        self.name = ""
         self.__start_time = time.time()
         self.__listener = listener
         self.__gid = ""
@@ -46,7 +46,6 @@ class YoutubeDLHelper(DownloadHelper):
             'usenetrc': True
         }
         self.__download_speed = 0
-        self.download_speed_readable = ''
         self.downloaded_bytes = 0
         self.size = 0
         self.is_playlist = False
@@ -88,8 +87,12 @@ class YoutubeDLHelper(DownloadHelper):
                     except ZeroDivisionError:
                         pass
                 else:
-                    self.download_speed_readable = d['_speed_str']
+                    self.size = d['total_bytes']
                     self.downloaded_bytes = d['downloaded_bytes']
+                    try:
+                        self.progress = (self.downloaded_bytes / self.size) * 100
+                    except ZeroDivisionError:
+                        pass
 
     def __onDownloadStart(self):
         with download_dict_lock:
@@ -102,7 +105,7 @@ class YoutubeDLHelper(DownloadHelper):
         self.__listener.onDownloadError(error)
 
     def extractMetaData(self, link, qual, name):
-        if 'hotstar' or 'sonyliv' in link:
+        if "hotstar" in link or "sonyliv" in link:
             self.opts['geo_bypass_country'] = 'IN'
 
         with YoutubeDL(self.opts) as ydl:
@@ -160,7 +163,7 @@ class YoutubeDLHelper(DownloadHelper):
         self.__gid = f"{self.vid_id}{self.__listener.uid}"
         if qual == "audio":
           self.opts['format'] = 'bestaudio/best'
-          self.opts['postprocessors'] = [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3','preferredquality': '192',}]
+          self.opts['postprocessors'] = [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3','preferredquality': '320',}]
         else:
           self.opts['format'] = qual
         if not self.is_playlist:
